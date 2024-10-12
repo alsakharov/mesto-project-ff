@@ -16,16 +16,18 @@ deleteButton.addEventListener('click', deleteCallback);
 return cardElement;
 }
 // @todo: Функция удаления карточки
-function handleDeleteCard(event) {
-  const listItem = event.target.closest('.card');
+function deleteCard(evt) {
+  const listItem = evt.target.closest('.card');
   if (listItem) {
       listItem.remove();
   }
 }
+
 // @todo: Вывести карточки на страницу
 
 const container = document.querySelector('.places__list');
 initialCards.forEach((data) => {
-    const cardElement = createCard(data, handleDeleteCard);
+    const cardElement = createCard(data, deleteCard);
     container.append(cardElement);
 });
+
