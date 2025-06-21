@@ -1,6 +1,6 @@
 # Проектная работа Mesto
 
-Ссылка на репозиторий - https://github.com/alsakharov/zakrivayuschiy-teg-f
+Ссылка на репозиторий - https://github.com/alsakharov/mesto-project-ff
 
 * Тренировка вёрстки JavaScript
 * Используется HTML,CSS,JavaScript
