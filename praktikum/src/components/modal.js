@@ -18,6 +18,16 @@ function handleEscClose(evt) {
 // Закрытие по клику на оверлей
 export function setOverlayClose(modal) {
   modal.addEventListener('mousedown', (evt) => {
-    if (evt.target === evt.currentTarget) closeModal(modal);
+    if (evt.target === evt.currentTarget) {
+      closeModal(modal);
+    }
   });
+}
+
+// Закрытие по кнопке крестик (одна кнопка внутри попапа)
+export function setCloseButtonHandler(modal) {
+  const closeButton = modal.querySelector('.popup__close');
+  if (closeButton) {
+    closeButton.addEventListener('click', () => closeModal(modal));
+  }
 }

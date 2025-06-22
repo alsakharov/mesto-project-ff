@@ -1,4 +1,12 @@
-export function createCard(cardData, handleDeleteCard, handleLikeClick, handleImageClick) {
+function handleDeleteCard(evt) {
+  evt.target.closest(".card").remove();
+}
+
+function handleLikeClick(evt) {
+  evt.target.classList.toggle("card__like-button_is-active");
+}
+
+export function createCard(cardData, handleImageClick) {
   const template = document.querySelector("#card-template").content.cloneNode(true);
   const cardElement = template.querySelector(".card");
   const imgElement = cardElement.querySelector(".card__image");
@@ -18,3 +26,5 @@ export function createCard(cardData, handleDeleteCard, handleLikeClick, handleIm
 
   return cardElement;
 }
+
+export { handleDeleteCard, handleLikeClick };
