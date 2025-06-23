@@ -1,7 +1,7 @@
 import "../pages/index.css";
 
 import { initialCards } from "../components/cards.js";
-import { createCard } from "../components/card.js";
+import { createCard, handleDeleteCard, handleLikeClick } from "../components/card.js";
 import { openModal, closeModal, setOverlayClose } from "../components/modal.js";
 
 // Кнопки открытия попапов
@@ -35,13 +35,6 @@ const placeLinkInput = addCardForm.querySelector("input[name='link']");
 const cardList = document.querySelector(".places__list");
 
 // Обработчики карточек
-function handleDeleteCard(evt) {
-  evt.target.closest(".card").remove();
-}
-
-function handleLikeClick(evt) {
-  evt.target.classList.toggle("card__like-button_is-active");
-}
 
 function handleImageClick(name, link) {
   const popupImage = imagePopup.querySelector(".popup__image");
