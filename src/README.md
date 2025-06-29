@@ -1,6 +1,6 @@
 # Проектная работа Mesto
-
-Ссылка на репозиторий - https://github.com/alsakharov/mesto-project-ff/tree/main/src
+Ссылка на GitHub Pages (сайт) - https://alsakharov.github.io/mesto-project-ff/
+Ссылка на репозиторий - https://github.com/alsakharov/mesto-project-ff
 
 * Тренировка вёрстки JavaScript
 * Используется HTML,CSS,JavaScript
