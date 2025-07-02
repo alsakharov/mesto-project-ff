@@ -25,8 +25,8 @@ module.exports = {
       // добавили правило для обработки файлов
       {
         // регулярное выражение, которое ищет все файлы с такими расширениями
-        test: /\.(png|svg|jpg|gif|woff(2)?|eot|ttf|otf)$/,
-        type: 'asset/resource'
+         test: /\.(png|svg|jpg|jpeg|gif|ico|woff2?|eot|ttf|otf)$/i,
+         type: 'asset/resource'
       },
       {
         // применять это правило только к CSS-файлам
