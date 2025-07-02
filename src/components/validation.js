@@ -1,6 +1,6 @@
 function showInputError(formElement, inputElement, errorMessage, config) {
   const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  if (!errorElement) return; 
+  if (!errorElement) return;
   inputElement.classList.add(config.inputErrorClass);
   errorElement.textContent = errorMessage;
   errorElement.classList.add(config.errorClass);
@@ -14,24 +14,34 @@ function hideInputError(formElement, inputElement, config) {
   errorElement.classList.remove(config.errorClass);
 }
 
+// Проверка валидности URL
+function isValidUrl(value) {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function checkInputValidity(inputElement, formElement, config) {
   inputElement.setCustomValidity('');
 
   if (inputElement.validity.valueMissing) {
     inputElement.setCustomValidity('Вы пропустили это поле');
-  } else if (inputElement.validity.patternMismatch) {
-    inputElement.setCustomValidity(
-      inputElement.dataset.errorMessage || 'Неверный формат'
-    );
-  } else if (inputElement.validity.typeMismatch && inputElement.type === 'url') {
+  } else if (inputElement.name === 'link' && !isValidUrl(inputElement.value)) {
     inputElement.setCustomValidity('Введите адрес сайта');
+  } else if (inputElement.validity.patternMismatch) {
+    inputElement.setCustomValidity(inputElement.dataset.errorMessage || 'Неверный формат');
+  } else if (inputElement.validity.typeMismatch && inputElement.type === 'url') {
+    inputElement.setCustomValidity('Введите корректный URL');
   } else if (inputElement.validity.tooShort) {
     inputElement.setCustomValidity(
-      `Минимальное количество символов: ${inputElement.minLength}. Длина текста сейчас: ${inputElement.value.length} символов`
+      `Минимальное количество символов: ${inputElement.minLength}. Длина сейчас: ${inputElement.value.length} символ(ов)`
     );
   } else if (inputElement.validity.tooLong) {
     inputElement.setCustomValidity(
-      `Максимальное количество символов: ${inputElement.maxLength}. Длина текста сейчас: ${inputElement.value.length} символов`
+      `Максимальное количество символов: ${inputElement.maxLength}. Длина сейчас: ${inputElement.value.length} символ(ов)`
     );
   }
 

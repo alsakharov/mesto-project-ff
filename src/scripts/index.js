@@ -1,5 +1,4 @@
 import "../pages/index.css";
-
 import { createCard } from "../components/card.js";
 import { openModal, closeModal, setOverlayClose } from "../components/modal.js";
 import { enableValidation, clearValidation } from "../components/validation.js";
@@ -9,10 +8,11 @@ import {
   updateUserInfo,
   addCardApi,
   deleteCardApi,
+  likeCardApi,
+  dislikeCardApi,
   updateAvatar
 } from "../components/api.js";
-
-import { renderLoading } from "../components/loading.js";
+import { renderLoading } from "../components/utils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const validationConfig = {
@@ -31,12 +31,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const imagePopup = document.querySelector(".popup_type_image");
   const avatarPopup = document.querySelector(".popup_type_avatar");
   const confirmDeletePopup = document.querySelector("#confirm-delete-popup");
+  const errorPopup = document.querySelector(".popup_type_error");
 
   const editProfileForm = editProfilePopup.querySelector("form[name='edit-profile']");
   const addCardForm = addCardPopup.querySelector("form[name='new-place']");
   const avatarForm = avatarPopup.querySelector("form[name='edit-avatar']");
   const confirmDeleteForm = confirmDeletePopup.querySelector("form[name='confirm-delete']");
   const confirmDeleteButton = confirmDeleteForm.querySelector('button[type="submit"]');
+  const errorPopupCloseButton = errorPopup.querySelector(".popup__close");
+  const errorPopupMessage = errorPopup.querySelector(".popup__error-message");
 
   const nameInput = editProfileForm.querySelector("#profile-name");
   const jobInput = editProfileForm.querySelector("#profile-description");
@@ -56,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUserId = null;
   let cardToDelete = null;
   let cardToDeleteId = null;
+  let lastPopupWithLink = null;
 
   function handleImageClick(name, link) {
     const popupImage = imagePopup.querySelector(".popup__image");
@@ -75,30 +79,42 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleConfirmDeleteSubmit(evt) {
     evt.preventDefault();
     renderLoading(true, confirmDeleteButton, 'Да');
-
     deleteCardApi(cardToDeleteId)
       .then(() => {
         cardToDelete.remove();
         closeModal(confirmDeletePopup);
-      })
-      .catch((err) => console.log(`Ошибка при удалении карточки: ${err}`))
+      }) 
       .finally(() => renderLoading(false, confirmDeleteButton, 'Да'));
   }
-  confirmDeleteForm.addEventListener('submit', handleConfirmDeleteSubmit);
+
+  confirmDeleteForm.addEventListener("submit", handleConfirmDeleteSubmit);
 
   function handleProfileSubmit(evt) {
     evt.preventDefault();
     const submitButton = editProfileForm.querySelector('button[type="submit"]');
     renderLoading(true, submitButton);
-
     updateUserInfo({ name: nameInput.value, about: jobInput.value })
       .then((userData) => {
         profileName.textContent = userData.name;
         profileJob.textContent = userData.about;
         closeModal(editProfilePopup);
       })
-      .catch((err) => console.log(`Ошибка обновления профиля: ${err}`))
       .finally(() => renderLoading(false, submitButton));
+  }
+
+  function checkImageExists(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => reject(false);
+      img.src = url;
+    });
+  }
+
+  function openErrorPopup(message, source) {
+    errorPopupMessage.textContent = message;
+    lastPopupWithLink = source;
+    openModal(errorPopup);
   }
 
   function handleAddCardSubmit(evt) {
@@ -106,19 +122,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const submitButton = addCardForm.querySelector('button[type="submit"]');
     renderLoading(true, submitButton);
 
-    addCardApi({ name: placeNameInput.value, link: placeLinkInput.value })
+    checkImageExists(placeLinkInput.value)
+      .then(() => {
+        return addCardApi({ name: placeNameInput.value, link: placeLinkInput.value });
+      })
       .then((newCardData) => {
         const newCard = createCard(newCardData, currentUserId, {
           onDeleteCard: openConfirmDeletePopup,
-          onOpenPreviewImage: handleImageClick
+          onOpenPreviewImage: handleImageClick,
+          onLikeCard: handleLikeToggle
         });
         cardList.prepend(newCard);
         addCardForm.reset();
         clearValidation(addCardForm, validationConfig);
         closeModal(addCardPopup);
       })
-      .catch((err) => console.log(`Ошибка добавления карточки: ${err}`))
+      .catch(() => {
+        openErrorPopup("По ссылке не найдено изображение. Проверьте URL.", "card");
+      })
       .finally(() => renderLoading(false, submitButton));
+  }
+
+  function handleLikeToggle(cardId, likeButton, likeCount) {
+    const liked = likeButton.classList.contains("card__like-button_is-active");
+    const apiCall = liked ? dislikeCardApi : likeCardApi;
+
+    apiCall(cardId)
+      .then((updatedCard) => {
+        likeButton.classList.toggle("card__like-button_is-active");
+        likeCount.textContent = updatedCard.likes.length;
+      })   
   }
 
   function handleAvatarSubmit(evt) {
@@ -126,14 +159,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const submitButton = avatarForm.querySelector('button[type="submit"]');
     renderLoading(true, submitButton);
 
-    updateAvatar(avatarInput.value)
+    checkImageExists(avatarInput.value)
+      .then(() => {
+        return updateAvatar(avatarInput.value);
+      })
       .then((userData) => {
         profileImage.src = userData.avatar;
         avatarForm.reset();
         closeModal(avatarPopup);
       })
-      .catch((err) => console.log(`Ошибка обновления аватара: ${err}`))
-      .finally(() => renderLoading(false, submitButton));
+      .catch(() => {
+        openErrorPopup("По ссылке не удалось загрузить аватар. Убедитесь, что URL правильный.", "avatar");
+      })
+      .finally(() => {
+        renderLoading(false, submitButton);
+      });
   }
 
   profileEditButton.addEventListener("click", () => {
@@ -163,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const popup = btn.closest(".popup");
     btn.addEventListener("click", () => closeModal(popup));
   });
+
   popups.forEach(setOverlayClose);
 
   Promise.all([getUserInfo(), getInitialCards()])
@@ -175,12 +216,32 @@ document.addEventListener("DOMContentLoaded", () => {
       cards.forEach((cardData) => {
         const card = createCard(cardData, currentUserId, {
           onDeleteCard: openConfirmDeletePopup,
-          onOpenPreviewImage: handleImageClick
+          onOpenPreviewImage: handleImageClick,
+          onLikeCard: handleLikeToggle
         });
         cardList.append(card);
       });
     })
-    .catch((err) => console.log(`Ошибка загрузки данных: ${err}`));
+    
 
   enableValidation(validationConfig);
+
+  const errorOkButton = errorPopup.querySelector(".popup__button");
+
+  function handleCloseErrorPopup() {
+    closeModal(errorPopup);
+
+    if (lastPopupWithLink === "card" && placeLinkInput) {
+      placeLinkInput.value = "";
+    }
+
+    if (lastPopupWithLink === "avatar" && avatarInput) {
+      avatarInput.value = "";
+    }
+
+    lastPopupWithLink = null;
+  }
+
+  errorOkButton.addEventListener("click", handleCloseErrorPopup);
+  errorPopupCloseButton.addEventListener("click", handleCloseErrorPopup);
 });

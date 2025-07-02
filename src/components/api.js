@@ -1,3 +1,5 @@
+import { checkResponse } from './utils.js';
+
 const config = {
   baseUrl: 'https://nomoreparties.co/v1/wff-cohort-41',
   headers: {
@@ -6,22 +8,19 @@ const config = {
   }
 };
 
-const checkResponse = (res) => {
-  if (res.ok) {
-    return res.json();
-  }
-  return Promise.reject(`Ошибка: ${res.status}`);
-};
-
-// Загрузка информации о пользователе
-export const getUserInfo = () => {
+export function getUserInfo() {
   return fetch(`${config.baseUrl}/users/me`, {
     headers: config.headers
   }).then(checkResponse);
-};
+}
 
-// Обновление информации о пользователе
-export const updateUserInfo = (data) => {
+export function getInitialCards() {
+  return fetch(`${config.baseUrl}/cards`, {
+    headers: config.headers
+  }).then(checkResponse);
+}
+
+export function updateUserInfo(data) {
   return fetch(`${config.baseUrl}/users/me`, {
     method: 'PATCH',
     headers: config.headers,
@@ -30,17 +29,19 @@ export const updateUserInfo = (data) => {
       about: data.about
     })
   }).then(checkResponse);
-};
+}
 
-// Загрузка карточек
-export const getInitialCards = () => {
-  return fetch(`${config.baseUrl}/cards`, {
-    headers: config.headers
+export function updateAvatar(avatarUrl) {
+  return fetch(`${config.baseUrl}/users/me/avatar`, {
+    method: 'PATCH',
+    headers: config.headers,
+    body: JSON.stringify({
+      avatar: avatarUrl
+    })
   }).then(checkResponse);
-};
+}
 
-// Добавление новой карточки
-export const addCardApi = (data) => {
+export function addCardApi(data) {
   return fetch(`${config.baseUrl}/cards`, {
     method: 'POST',
     headers: config.headers,
@@ -49,35 +50,25 @@ export const addCardApi = (data) => {
       link: data.link
     })
   }).then(checkResponse);
-};
+}
 
-// Удаление карточки
-export const deleteCardApi = (cardId) => {
+export function deleteCardApi(cardId) {
   return fetch(`${config.baseUrl}/cards/${cardId}`, {
     method: 'DELETE',
     headers: config.headers
   }).then(checkResponse);
-};
+}
 
-// Лайк карточки
-export const likeCardApi = (cardId) => {
+export function likeCardApi(cardId) {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: 'PUT',
     headers: config.headers
   }).then(checkResponse);
-};
+}
 
-// Снятие лайка
-export const dislikeCardApi = (cardId) => {
+export function dislikeCardApi(cardId) {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: 'DELETE',
     headers: config.headers
   }).then(checkResponse);
-};
-export const updateAvatar = (avatarUrl) => {
-  return fetch(`${config.baseUrl}/users/me/avatar`, {
-    method: "PATCH",
-    headers: config.headers,
-    body: JSON.stringify({ avatar: avatarUrl })
-  }).then(checkResponse);
-};
+}
