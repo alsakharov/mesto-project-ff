@@ -20,15 +20,12 @@ export function getInitialCards() {
   }).then(checkResponse);
 }
 
-export function updateUserInfo(data) {
-  return fetch(`${config.baseUrl}/users/me`, {
-    method: 'PATCH',
-    headers: config.headers,
-    body: JSON.stringify({
-      name: data.name,
-      about: data.about
-    })
-  }).then(checkResponse);
+export function updateUserInfo(data) { 
+  return fetch(`${config.baseUrl}/users/me`, { 
+    method: 'PATCH', 
+    headers: config.headers, 
+    body: JSON.stringify(data)
+  }); 
 }
 
 export function updateAvatar(avatarUrl) {

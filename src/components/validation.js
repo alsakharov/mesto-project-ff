@@ -14,27 +14,13 @@ function hideInputError(formElement, inputElement, config) {
   errorElement.classList.remove(config.errorClass);
 }
 
-// Проверка валидности URL
-function isValidUrl(value) {
-  try {
-    new URL(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function checkInputValidity(inputElement, formElement, config) {
   inputElement.setCustomValidity('');
 
   if (inputElement.validity.valueMissing) {
     inputElement.setCustomValidity('Вы пропустили это поле');
-  } else if (inputElement.name === 'link' && !isValidUrl(inputElement.value)) {
-    inputElement.setCustomValidity('Введите адрес сайта');
   } else if (inputElement.validity.patternMismatch) {
     inputElement.setCustomValidity(inputElement.dataset.errorMessage || 'Неверный формат');
-  } else if (inputElement.validity.typeMismatch && inputElement.type === 'url') {
-    inputElement.setCustomValidity('Введите корректный URL');
   } else if (inputElement.validity.tooShort) {
     inputElement.setCustomValidity(
       `Минимальное количество символов: ${inputElement.minLength}. Длина сейчас: ${inputElement.value.length} символ(ов)`
